@@ -19,6 +19,9 @@ class Scanner (object):
         self.scapykwargs = kwargs
 
         wildcard = 2**(32-masksize)
+        print self.network
+        print wildcard
+        print self.network + wildcard
         hosts = [x + self.network for x in xrange(1, wildcard)]
         self.targets = list(map(iptools.int2ip, hosts))
 
@@ -50,7 +53,56 @@ class Scanner (object):
             print 'Done: %s IP addresses (%s hosts up) scanned in %.2f seconds' \
                   % (len(self.targets), count+1, ans[1][-1].time - ans[0][0].time)
 
+    def resolve_names(self, **kwargs):
+        """Performs host name scans on already discovered ips"""
+        if not self.hosts:
+            raise IndexError('no hosts are given / previously discovered / up')
+
+        verbose = 'verbose' in kwargs.keys() and kwargs['verbose']
+        if verbose:
+            print 'Starting name resolution'
+
+        count = 0
+        for host in self.hosts:
+            try:
+                name = socket.gethostbyaddr(host['ip'])[0]
+                if not name:
+                    continue
+                host['name'] = name
+                count += 1
+                if verbose:
+                    print "%s (%s)" % (name, host['ip'])
+            except socket.herror:
+                continue
+
+        if verbose:
+            print 'Done: %s hosts scanned, %s identified' % (len(self.hosts), count)
+
+    def resolve_vendors(self, **kwargs):
+        """Resolves vendor on already discovered mac addresses"""
+        if not self.hosts:
+            raise IndexError('no hosts are given / previously discovered / up')
+
+        verbose = 'verbose' in kwargs.keys() and kwargs['verbose']
+        if verbose:
+            print 'Starting vendor lookup'
+
+        count = 0
+        for host in self.hosts:
+            response = requests.get('http://macvendors.co/api/' + host['mac'])
+            result = response.json()['result']
+            host['vendor'] = 'unknown' if 'error' in result else result['company']
+            if host['vendor'] != 'unknown':
+                count += 1
+            if verbose:
+                print '%s (%s)' % (host['mac'].upper(), host['vendor'])
+
+        if verbose:
+            print 'Done: %s hosts scanned, %s identified' % (len(self.hosts), count)
+
 
 if __name__ == '__main__':
     scanner = Scanner(conf.iface.ip, 23)
     scanner.pingscan(verbose=1); print '\n\n'
+    scanner.resolve_names(verbose=1); print '\n\n'
+    scanner.resolve_vendors(verbose=1)
