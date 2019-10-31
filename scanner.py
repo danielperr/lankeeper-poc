@@ -50,8 +50,37 @@ class Scanner (object):
         if verbose:
             print 'Scan report for %s:\nHost is up.\nMAC Address: %s\n' \
                   % (conf.iface.ip, conf.iface.mac)  # This machine
-            print 'Done: %s IP addresses (%s hosts up) scanned in %.2f seconds' \
-                  % (len(self.targets), count+1, ans[1][-1].time - ans[0][0].time)
+            if not count:
+                print 'Done: %s IP addresses (1 host up) scanned' % len(self.targets)
+            else:
+                print 'Done: %s IP addresses (%s hosts up) scanned in %.2f seconds' \
+                      % (len(self.targets), count+1, ans[1][-1].time - ans[0][0].time)
+
+    # def portscan(self, hosts=None, **kwargs):
+    #     """Performs port scans on already discovered ips"""
+    #     if not hosts:
+    #         hosts = self.hosts
+    #     if not hosts:
+    #         raise IndexError('no hosts are given / previously discovered / up')
+    #
+    #     verbose = 'verbose' in kwargs.keys() and kwargs['verbose']
+    #     if verbose:
+    #         print 'Starting port scan'
+    #
+    #     for host in hosts:
+    #         host['ports'] = list()
+    #         # for port in range(65535):
+    #         #     response = sr1(IP(dst=host['ip']) / TCP(dport=port, flags='S'), timeout=1)
+    #         #     if response:
+    #         #         if response.haslayer(TCP) and response[TCP].flags == 'SA':
+    #         #             host['ports'].append(port)
+    #         ans, unans = sr([IP(dst=host['ip']) / TCP(dport=port, flags='S') for port in range(9999)]
+    #                         , multi=1, verbose=0, timeout=0.1, **self.scapykwargs)
+    #         for snt, recvd in ans:
+    #             if recvd and recvd.haslayer(TCP) and recvd[TCP].flags == 0x12:  # SYN ACK = port open
+    #                 host['ports'].append(recvd['TCP'].sport)
+    #         if verbose:
+    #             print 'Open ports for %s:\n - %s' % (host['ip'], '\n - '.join(host['ports']))
 
     def resolve_names(self, **kwargs):
         """Performs host name scans on already discovered ips"""
@@ -103,6 +132,8 @@ class Scanner (object):
 
 if __name__ == '__main__':
     scanner = Scanner(conf.iface.ip, 23)
-    scanner.pingscan(verbose=1); print '\n\n'
-    scanner.resolve_names(verbose=1); print '\n\n'
-    scanner.resolve_vendors(verbose=1)
+    # scanner.pingscan(verbose=1); print '\n\n'
+    # scanner.portscan(verbose=1);
+    # scanner.resolve_names(verbose=1); print '\n\n'
+    # scanner.resolve_vendors(verbose=1)
+    scanner.portscan([{'ip': '10.100.102.15'}], verbose=1)
