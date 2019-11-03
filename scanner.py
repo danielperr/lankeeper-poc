@@ -19,9 +19,9 @@ class Scanner (object):
         self.scapykwargs = kwargs
 
         wildcard = 2**(32-masksize)
-        print self.network
-        print wildcard
-        print self.network + wildcard
+        # print self.network
+        # print wildcard
+        # print self.network + wildcard
         hosts = [x + self.network for x in xrange(1, wildcard)]
         self.targets = list(map(iptools.int2ip, hosts))
 
@@ -131,9 +131,9 @@ class Scanner (object):
 
 
 if __name__ == '__main__':
-    scanner = Scanner(conf.iface.ip, 23)
-    # scanner.pingscan(verbose=1); print '\n\n'
+    scanner = Scanner(conf.iface.ip, 16)
+    scanner.pingscan(verbose=1); print '\n\n'
     # scanner.portscan(verbose=1);
-    # scanner.resolve_names(verbose=1); print '\n\n'
-    # scanner.resolve_vendors(verbose=1)
-    scanner.portscan([{'ip': '10.100.102.15'}], verbose=1)
+    scanner.resolve_names(verbose=1); print '\n\n'
+    scanner.resolve_vendors(verbose=1)
+    # scanner.portscan([{'ip': '10.100.102.15'}], verbose=1)
